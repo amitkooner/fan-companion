@@ -57,13 +57,13 @@
 
 ### Step 2: Open YouTube (on laptop or second device)
 **Action:** Click "Watch on YouTube" link, or manually go to:  
-`https://www.youtube.com/watch?v=GTJwoWHMFjs`
+`https://www.youtube.com/watch?v=J6RT3BHHvPU`
 
 **What You Say:**
 > "I've got the game playing here on my laptop. Let's say I tune in at this moment..."
 
 **Action:** Scrub to ~2:30 in the video, note the score on screen  
-(Example: Warriors 12, Knicks 16, Q1)
+(Example: Warriors 7, Knicks 9, Q1 at ~8:22 for the record-tying shot)
 
 ### Step 3: Manual Sync
 **Action:** On phone, tap **"Start Watching"**  
