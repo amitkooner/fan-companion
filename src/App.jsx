@@ -441,6 +441,15 @@ export default function App() {
         <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, borderRadius: 10, overflow: "hidden", background: "#000", marginTop: 12 }}>
           {!ytReady && <iframe src={`https://www.youtube.com/embed/${game.ytId}?rel=0&modestbranding=1`} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }} allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowFullScreen title="Game" />}
           <div ref={ytDiv} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
+          {/* Embed restriction fallback */}
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.85)", padding: 24, textAlign: "center", pointerEvents: "none" }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>🏀</div>
+            <p style={{ fontSize: 14, color: "#fff", marginBottom: 8, fontWeight: 600 }}>Video Embed Restricted</p>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 16, lineHeight: 1.5 }}>This video can't be embedded due to YouTube restrictions. Watch it on YouTube and use manual sync below.</p>
+            <a href={`https://www.youtube.com/watch?v=${game.ytId}`} target="_blank" rel="noopener noreferrer" style={{ background: C.red, color: "#fff", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 700, textDecoration: "none", pointerEvents: "auto" }}>
+              Watch on YouTube ↗
+            </a>
+          </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8 }}>
           {videoPlaying
@@ -449,8 +458,8 @@ export default function App() {
                 {hasTs ? "Auto-syncing with video" : "Syncing with video"}
               </div>
             : <>
-                <p style={{ fontSize: 11, color: C.txM, textAlign: "center", margin: 0 }}>Press play to start the companion.</p>
-                <button style={{ background: C.bg2, color: C.blue, border: `1.5px solid ${C.blueB}`, borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer", flexShrink: 0 }} onClick={() => setSyncOpen(true)}>Sync</button>
+                <p style={{ fontSize: 11, color: C.txM, textAlign: "center", margin: 0 }}>Video restricted? Use manual sync →</p>
+                <button style={{ background: C.blue, color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 12, fontWeight: 700, cursor: "pointer", flexShrink: 0 }} onClick={() => setSyncOpen(true)}>Manual Sync</button>
               </>
           }
         </div>

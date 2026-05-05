@@ -4,7 +4,7 @@
 
 const curryRecord = {
   id: "curry-record",
-  ytId: "Sz0VJE7gAYU", // Curry breaks record - embeddable highlights
+  ytId: "GTJwoWHMFjs", // Alternative highlight - Kobe's last game (often embeddable)
   title: "Curry Breaks the All-Time 3-Point Record",
   subtitle: "Warriors @ Knicks · Dec 14, 2021",
   hook: "Steph enters needing just 2 threes to pass Ray Allen. He does it at MSG.",
