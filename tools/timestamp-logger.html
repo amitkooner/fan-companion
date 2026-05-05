@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Timestamp Logger</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Helvetica Neue',sans-serif;background:#f3f4f6;color:#111827}
+.c{max-width:800px;margin:0 auto;padding:16px}h1{font-size:20px;font-weight:800;margin-bottom:4px}
+.sub{font-size:13px;color:#6b7280;margin-bottom:16px;line-height:1.5}
+.vw{position:relative;padding-bottom:56.25%;height:0;border-radius:12px;overflow:hidden;background:#000;margin-bottom:16px}
+#yt-player{position:absolute;top:0;left:0;width:100%;height:100%}
+.ctrl{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.ctrl button{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none}
+.bp{background:#0052CC;color:#fff}.bs{background:#e5e7eb;color:#111827}.bd{background:#E5383B;color:#fff}
+.ct{font-size:14px;font-weight:700;color:#0052CC;font-variant-numeric:tabular-nums}
+.pl{border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;background:#fff;margin-bottom:16px;max-height:400px;overflow-y:auto}
+.pi{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:13px}
+.pi:last-child{border-bottom:none}.pi.mapped{background:#f0f6ff}.pi.cur{background:#fff7ed;border-left:3px solid #FF9F1C}
+.pidx{font-weight:700;color:#9ca3af;min-width:28px;text-align:center}
+.pdesc{flex:1;line-height:1.4}.pts{font-weight:700;color:#0052CC;min-width:60px;text-align:right;font-variant-numeric:tabular-nums}
+.pbtn{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid #e5e7eb;background:#fff;color:#0052CC}
+textarea{width:100%;height:160px;font-family:monospace;font-size:12px;padding:12px;border:1px solid #e5e7eb;border-radius:8px;resize:vertical}
+.ins{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-bottom:16px}
+.ins h3{font-size:14px;font-weight:700;margin-bottom:8px}.ins ol{padding-left:20px;font-size:13px;line-height:1.8;color:#4b5563}
+</style>
+</head>
+<body>
+<div class="c">
+<h1>Timestamp Logger</h1>
+<p class="sub">Map play-by-play events to video timestamps. Output goes into your app's timestamps array.</p>
+<div class="ins"><h3>How to use</h3><ol>
+<li>Press play on the video</li>
+<li>When a play happens, click <strong>Map</strong> next to it</li>
+<li>You don't need every play — just scoring plays + milestones</li>
+<li>Click <strong>Copy JSON</strong> when done</li>
+</ol></div>
+<div class="vw"><div id="yt-player"></div></div>
+<div class="ctrl">
+<span class="ct" id="td">0:00</span>
+<button class="bs" onclick="sk(-5)">← 5s</button>
+<button class="bs" onclick="sk(5)">5s →</button>
+<button class="bs" onclick="mn()">Map next unmapped</button>
+<button class="bd" onclick="ca()">Clear all</button>
+<button class="bp" onclick="ej()">Copy JSON</button>
+</div>
+<div class="pl" id="pl"></div>
+<h3 style="font-size:14px;font-weight:700;margin-bottom:8px">JSON Output</h3>
+<textarea id="jo" readonly placeholder="Map some plays..."></textarea>
+</div>
+<script>
+const P=[{q:1,t:"12:00",d:"Jump ball"},{q:1,t:"11:42",d:"Curry misses three"},{q:1,t:"11:20",d:"Randle mid-range"},{q:1,t:"10:55",d:"Wiggins layup"},{q:1,t:"10:30",d:"Randle three"},{q:1,t:"9:38",d:"Fournier floater"},{q:1,t:"9:15",d:"Looney dunk"},{q:1,t:"8:48",d:"Randle FTs"},{q:1,t:"8:22",d:"CURRY THREE #2973 — TIES RECORD"},{q:1,t:"7:33",d:"Curry misses"},{q:1,t:"7:10",d:"Randle three"},{q:1,t:"6:22",d:"Robinson alley-oop"},{q:1,t:"5:58",d:"CURRY THREE #2974 — BREAKS RECORD!"},{q:1,t:"5:55",d:"Timeout — ceremony"},{q:1,t:"5:30",d:"Fournier three"},{q:1,t:"4:10",d:"Poole three"},{q:1,t:"3:42",d:"Burks fadeaway"},{q:1,t:"2:20",d:"Curry three (4th)"},{q:1,t:"0:08",d:"Curry three (5th)"},{q:1,t:"0:00",d:"End Q1"},{q:2,t:"9:20",d:"Randle pick-and-pop"},{q:2,t:"8:45",d:"Curry floater"},{q:2,t:"6:55",d:"Fournier step-back"},{q:2,t:"5:37",d:"Randle FT"},{q:2,t:"0:02",d:"Halftime"},{q:3,t:"11:30",d:"Curry three"},{q:3,t:"9:45",d:"Poole three"},{q:3,t:"8:35",d:"Curry three"},{q:3,t:"7:50",d:"Wiggins ties it"},{q:3,t:"6:40",d:"Poole three — lead!"},{q:3,t:"5:30",d:"Curry scoop layup"},{q:3,t:"1:50",d:"Curry from 30ft"},{q:3,t:"0:03",d:"End Q3 — tied 78"},{q:4,t:"10:10",d:"Poole three"},{q:4,t:"7:40",d:"Curry three"},{q:4,t:"6:20",d:"Wiggins dunk"},{q:4,t:"5:00",d:"Porter three"},{q:4,t:"2:10",d:"Poole drives"},{q:4,t:"1:15",d:"Curry FTs"},{q:4,t:"0:05",d:"FINAL 105-96"}];
+let ts=new Array(P.length).fill(null),pl=null,ci=0;
+function rl(){const l=document.getElementById('pl');l.innerHTML=P.map((p,i)=>`<div class="pi ${ts[i]!==null?'mapped':''} ${i===ci?'cur':''}"><span class="pidx">${i}</span><span style="font-size:10px;font-weight:700;color:#9ca3af;min-width:28px">Q${p.q}</span><span style="font-size:11px;color:#9ca3af;min-width:36px">${p.t}</span><span class="pdesc">${p.d}</span><span class="pts">${ts[i]!==null?ft(ts[i]):'—'}</span><button class="pbtn" onclick="mp(${i})">${ts[i]!==null?'Remap':'Map'}</button></div>`).join('');uo();}
+function ft(s){return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0')}
+function mp(i){if(!pl||!pl.getCurrentTime){alert('Video not ready');return}ts[i]=Math.round(pl.getCurrentTime());ci=i+1;rl();const items=document.querySelectorAll('.pi');if(items[ci])items[ci].scrollIntoView({behavior:'smooth',block:'center'})}
+function mn(){for(let i=0;i<P.length;i++){if(ts[i]===null){mp(i);return}}alert('All mapped!')}
+function ca(){if(!confirm('Clear all?'))return;ts=new Array(P.length).fill(null);ci=0;rl()}
+function sk(d){if(pl)pl.seekTo(pl.getCurrentTime()+d,true)}
+function uo(){const e=[];ts.forEach((s,i)=>{if(s!==null)e.push({sec:s,playIdx:i})});e.sort((a,b)=>a.sec-b.sec);document.getElementById('jo').value=JSON.stringify(e,null,2)}
+function ej(){const ta=document.getElementById('jo');ta.select();navigator.clipboard.writeText(ta.value).then(()=>alert('Copied! Paste into timestamps[] in src/data/curry-record.js')).catch(()=>alert('Copy the text manually'))}
+setInterval(()=>{if(pl&&pl.getCurrentTime)document.getElementById('td').textContent=ft(pl.getCurrentTime())},250);
+function onYouTubeIframeAPIReady(){pl=new YT.Player('yt-player',{videoId:'J6RT3BHHvPU',playerVars:{rel:0,modestbranding:1}})}
+rl();
+</script>
+<script src="https://www.youtube.com/iframe_api"></script>
+</body></html>

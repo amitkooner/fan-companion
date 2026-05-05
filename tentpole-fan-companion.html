@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TENTPOLE — Fan Companion MCP Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0908;
+    --paper: #f4f1ea;
+    --bone: #e8e2d4;
+    --court: #c8763a;
+    --court-bright: #ff6b1a;
+    --hardwood: #8b4513;
+    --buzzer: #ffcc00;
+    --dim: #6b6b6b;
+    --line: #1a1815;
+    --net: #fafafa;
+    --green: #4a7c3f;
+    --red: #b33a2e;
+    --blue: #2c4f7c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background-image:
+      radial-gradient(ellipse at top right, rgba(255,107,26,0.08), transparent 50%),
+      radial-gradient(ellipse at bottom left, rgba(44,79,124,0.06), transparent 50%),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ============ MASTHEAD ============ */
+  .masthead {
+    height: 56px;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    padding: 0 24px;
+    gap: 24px;
+    background: rgba(10,9,8,0.85);
+    backdrop-filter: blur(12px);
+    position: relative;
+    z-index: 10;
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .brand-mark {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 0.12em;
+    color: var(--paper);
+    line-height: 1;
+  }
+  .brand-mark span { color: var(--court-bright); }
+  .brand-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dim);
+    border-left: 1px solid var(--line);
+    padding-left: 10px;
+  }
+
+  .session-meta {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .session-meta b {
+    color: var(--paper);
+    font-weight: 500;
+    margin-left: 6px;
+  }
+
+  .masthead-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .live-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--red);
+    border-radius: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: white;
+    text-transform: uppercase;
+  }
+  .live-dot {
+    width: 6px; height: 6px;
+    background: white; border-radius: 50%;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ============ MAIN GRID ============ */
+  .stage {
+    display: grid;
+    grid-template-columns: 240px 1fr 380px;
+    height: calc(100vh - 56px);
+  }
+
+  /* ============ SIDEBAR — TOOLS ============ */
+  .sidebar {
+    border-right: 1px solid var(--line);
+    background: #0d0c0a;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .sidebar-head {
+    padding: 18px 20px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .sidebar-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 4px;
+  }
+  .sidebar-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.06em;
+    color: var(--paper);
+  }
+  .sidebar-status {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--green);
+    letter-spacing: 0.1em;
+  }
+  .status-dot {
+    width: 5px; height: 5px;
+    background: var(--green); border-radius: 50%;
+    box-shadow: 0 0 6px var(--green);
+  }
+
+  .tools-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 0;
+  }
+  .tools-label {
+    padding: 16px 20px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .tool {
+    padding: 11px 20px;
+    border-left: 2px solid transparent;
+    cursor: default;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .tool:hover { background: rgba(255,255,255,0.02); }
+  .tool.firing {
+    border-left-color: var(--court-bright);
+    background: rgba(255,107,26,0.08);
+  }
+  .tool.fired {
+    border-left-color: var(--green);
+  }
+  .tool-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--paper);
+    font-weight: 500;
+    word-break: break-word;
+  }
+  .tool-name b { color: var(--court-bright); font-weight: 700; }
+  .tool-desc {
+    margin-top: 3px;
+    font-size: 10px;
+    color: var(--dim);
+    line-height: 1.4;
+  }
+  .tool-count {
+    position: absolute;
+    top: 11px; right: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--dim);
+    background: var(--line);
+    padding: 2px 6px;
+    border-radius: 2px;
+  }
+  .tool.firing .tool-count {
+    background: var(--court-bright);
+    color: var(--ink);
+  }
+
+  .sidebar-foot {
+    border-top: 1px solid var(--line);
+    padding: 14px 20px;
+  }
+  .data-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .data-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+  }
+  .data-row b { color: var(--paper); font-weight: 500; }
+
+  /* ============ CENTER — CHAT ============ */
+  .chat {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--ink);
+    position: relative;
+  }
+  .chat::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .chat-head {
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+  .chat-context {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .ctx-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .ctx-game {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 17px;
+    letter-spacing: 0.06em;
+  }
+  .ctx-game .vs { color: var(--court-bright); margin: 0 8px; }
+
+  .scenario-pick {
+    display: flex;
+    gap: 8px;
+  }
+  .scen-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--dim);
+    padding: 7px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .scen-btn:hover { color: var(--paper); border-color: var(--paper); }
+  .scen-btn.active {
+    background: var(--court-bright);
+    color: var(--ink);
+    border-color: var(--court-bright);
+    font-weight: 700;
+  }
+
+  .chat-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 32px 100px;
+    position: relative;
+    z-index: 1;
+  }
+  .chat-scroll::-webkit-scrollbar { width: 6px; }
+  .chat-scroll::-webkit-scrollbar-thumb { background: var(--line); }
+
+  .msg {
+    margin-bottom: 24px;
+    max-width: 720px;
+    animation: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .msg-avatar {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 11px;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 0;
+  }
+  .msg.user .msg-avatar { background: var(--paper); color: var(--ink); }
+  .msg.claude .msg-avatar { background: var(--court-bright); color: var(--ink); }
+
+  .msg-body {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--paper);
+    font-weight: 400;
+  }
+  .msg-body p { margin-bottom: 10px; }
+  .msg-body p:last-child { margin-bottom: 0; }
+  .msg-body em { color: var(--court-bright); font-style: italic; }
+  .msg-body strong { font-weight: 600; color: var(--bone); }
+
+  .msg.user .msg-body {
+    font-family: 'Inter', sans-serif;
+    font-size: 14.5px;
+    color: var(--bone);
+  }
+
+  /* tool call cards inline in chat */
+  .tool-call {
+    background: linear-gradient(180deg, rgba(255,107,26,0.04), rgba(255,107,26,0));
+    border: 1px solid rgba(255,107,26,0.2);
+    border-left: 2px solid var(--court-bright);
+    padding: 10px 14px;
+    margin: 12px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--bone);
+    animation: rise 0.4s ease both;
+  }
+  .tool-call-head {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--court-bright);
+  }
+  .tool-call-name b { color: white; }
+  .tool-call-args { color: var(--dim); font-size: 10px; }
+
+  /* feature cards */
+  .feature-card {
+    background: #110f0d;
+    border: 1px solid var(--line);
+    margin: 14px 0;
+    overflow: hidden;
+  }
+  .fc-stripe {
+    height: 3px;
+    background: var(--court-bright);
+  }
+  .feature-card.legacy .fc-stripe { background: var(--buzzer); }
+  .feature-card.translator .fc-stripe { background: var(--blue); }
+  .feature-card.milestone .fc-stripe { background: var(--green); }
+
+  .fc-head {
+    padding: 12px 16px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid var(--line);
+  }
+  .fc-kind {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--court-bright);
+  }
+  .feature-card.legacy .fc-kind { color: var(--buzzer); }
+  .feature-card.translator .fc-kind { color: #6ba3e8; }
+  .feature-card.milestone .fc-kind { color: #6fb55f; }
+
+  .fc-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--dim);
+  }
+  .fc-title {
+    padding: 10px 16px 6px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 0.04em;
+    line-height: 1.05;
+    color: var(--paper);
+  }
+  .fc-body {
+    padding: 0 16px 16px;
+    font-family: 'Fraunces', serif;
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--bone);
+  }
+  .fc-body p { margin-bottom: 8px; }
+  .fc-body p:last-child { margin-bottom: 0; }
+  .fc-body .term {
+    color: var(--court-bright);
+    font-weight: 600;
+    font-style: normal;
+    border-bottom: 1px dotted var(--court-bright);
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    margin: 10px -16px -16px;
+  }
+  .stat-cell {
+    background: #0d0c0a;
+    padding: 12px 16px;
+  }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    line-height: 1;
+    color: var(--paper);
+  }
+  .stat-num.hot { color: var(--court-bright); }
+  .stat-lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-top: 4px;
+  }
+
+  /* composer */
+  .composer {
+    position: absolute;
+    left: 32px; right: 32px; bottom: 24px;
+    background: #110f0d;
+    border: 1px solid var(--line);
+    z-index: 2;
+  }
+  .composer-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 14px 50px 14px 16px;
+    color: var(--paper);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    outline: none;
+  }
+  .composer-input::placeholder { color: var(--dim); }
+  .composer-send {
+    position: absolute;
+    right: 8px; top: 50%;
+    transform: translateY(-50%);
+    background: var(--court-bright);
+    border: none;
+    color: var(--ink);
+    width: 32px; height: 32px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: transform 0.15s;
+  }
+  .composer-send:hover { transform: translateY(-50%) scale(1.05); }
+  .composer-send:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .typing {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px 0;
+  }
+  .typing span {
+    width: 6px; height: 6px;
+    background: var(--court-bright);
+    border-radius: 50%;
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.15s; }
+  .typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0.4); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+
+  /* ============ RIGHT — GAME PANEL ============ */
+  .gamepanel {
+    border-left: 1px solid var(--line);
+    background: #0d0c0a;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .gp-head {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .gp-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .gp-q {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--court-bright);
+    letter-spacing: 0.05em;
+  }
+
+  .scoreboard {
+    padding: 24px 20px;
+    border-bottom: 1px solid var(--line);
+    background:
+      linear-gradient(180deg, rgba(255,107,26,0.04), transparent);
+  }
+  .team {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0;
+  }
+  .team + .team { border-top: 1px solid var(--line); }
+  .team-logo {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+  }
+  .team-logo.gsw { background: #1d428a; color: #ffc72c; }
+  .team-logo.bos { background: #007a33; color: white; }
+  .team-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.06em;
+    line-height: 1;
+  }
+  .team-record {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    margin-top: 3px;
+  }
+  .team-score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    color: var(--paper);
+    font-variant-numeric: tabular-nums;
+    transition: color 0.3s;
+  }
+  .team-score.scored { color: var(--court-bright); }
+
+  .clock-strip {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--line);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+  }
+  .clock-strip b { color: var(--paper); font-weight: 500; }
+
+  .pbp-section {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 20px;
+  }
+  .pbp-section::-webkit-scrollbar { width: 4px; }
+  .pbp-section::-webkit-scrollbar-thumb { background: var(--line); }
+
+  .pbp-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 10px;
+  }
+
+  .play {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    animation: rise 0.4s ease both;
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    gap: 10px;
+  }
+  .play-clock {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    padding-top: 1px;
+  }
+  .play-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--bone);
+  }
+  .play.miss .play-text { color: var(--dim); }
+  .play.score .play-text { color: var(--paper); }
+  .play.score .play-text b { color: var(--court-bright); }
+  .play.milestone {
+    background: linear-gradient(90deg, rgba(74,124,63,0.15), transparent);
+    border-bottom-color: var(--green);
+    padding-left: 10px;
+    margin: 0 -10px;
+  }
+  .play.milestone .play-text b { color: #82d96c; }
+
+  .controls {
+    padding: 14px 20px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    gap: 8px;
+  }
+  .ctrl-btn {
+    flex: 1;
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--paper);
+    padding: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .ctrl-btn:hover { border-color: var(--court-bright); color: var(--court-bright); }
+  .ctrl-btn.primary {
+    background: var(--court-bright);
+    border-color: var(--court-bright);
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .ctrl-btn.primary:hover { background: var(--paper); border-color: var(--paper); color: var(--ink); }
+
+  /* welcome state */
+  .welcome {
+    text-align: center;
+    padding: 80px 20px;
+    max-width: 540px;
+    margin: 0 auto;
+  }
+  .welcome-mark {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 64px;
+    letter-spacing: 0.1em;
+    line-height: 0.95;
+    color: var(--paper);
+    margin-bottom: 4px;
+  }
+  .welcome-mark span { color: var(--court-bright); }
+  .welcome-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 36px;
+  }
+  .welcome-cta {
+    background: var(--court-bright);
+    color: var(--ink);
+    border: none;
+    padding: 14px 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .welcome-cta:hover { background: var(--paper); transform: translateY(-1px); }
+  .welcome-hint {
+    margin-top: 18px;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--dim);
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="brand">
+    <div class="brand-mark">TENT<span>POLE</span></div>
+    <div class="brand-tag">FAN COMPANION · MCP DEMO</div>
+  </div>
+  <div class="session-meta">
+    <span>SESSION <b>#TP-0241</b></span>
+    <span>SCENARIO <b>NBA CUP FINAL</b></span>
+    <span>RUNTIME <b id="runtime">00:00</b></span>
+  </div>
+  <div class="masthead-actions">
+    <span class="live-pill"><span class="live-dot"></span> SIMULATING</span>
+  </div>
+</header>
+
+<div class="stage">
+
+  <!-- ============ SIDEBAR — TOOLS ============ -->
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <div class="sidebar-title">MCP SERVER</div>
+      <div class="sidebar-name">tentpole-companion</div>
+      <div class="sidebar-status"><span class="status-dot"></span> CONNECTED · v0.4.2</div>
+    </div>
+
+    <div class="tools-list">
+      <div class="tools-label">Exposed Tools (6)</div>
+
+      <div class="tool" data-tool="get_catchup_briefing">
+        <div class="tool-name"><b>get_catchup_briefing</b>(team_a, team_b)</div>
+        <div class="tool-desc">Storylines, head-to-head, rivalry context</div>
+        <div class="tool-count">0</div>
+      </div>
+
+      <div class="tool" data-tool="translate_play">
+        <div class="tool-name"><b>translate_play</b>(play_desc)</div>
+        <div class="tool-desc">Jargon → plain language + analogy</div>
+        <div class="tool-count">0</div>
+      </div>
+
+      <div class="tool" data-tool="check_milestones">
+        <div class="tool-name"><b>check_milestones</b>(player, stats)</div>
+        <div class="tool-desc">Records & all-time benchmark detection</div>
+        <div class="tool-count">0</div>
+      </div>
+
+      <div class="tool" data-tool="start_game_simulation">
+        <div class="tool-name"><b>start_game_simulation</b>(game_id)</div>
+        <div class="tool-desc">Replay real PBP on a configurable timer</div>
+        <div class="tool-count">0</div>
+      </div>
+
+      <div class="tool" data-tool="get_live_game_state">
+        <div class="tool-name"><b>get_live_game_state</b>()</div>
+        <div class="tool-desc">Current simulated score + last play</div>
+        <div class="tool-count">0</div>
+      </div>
+
+      <div class="tool" data-tool="get_player_context">
+        <div class="tool-name"><b>get_player_context</b>(player_name)</div>
+        <div class="tool-desc">Career arc, biographical narrative</div>
+        <div class="tool-count">0</div>
+      </div>
+    </div>
+
+    <div class="sidebar-foot">
+      <div class="data-stack">
+        <div class="data-row"><span>BACKEND</span><b>SQLite</b></div>
+        <div class="data-row"><span>STATIC</span><b>nba_api</b></div>
+        <div class="data-row"><span>NARRATIVE</span><b>curated</b></div>
+        <div class="data-row"><span>LIVE FEED</span><b>simulated</b></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ CENTER — CHAT ============ -->
+  <main class="chat">
+    <div class="chat-head">
+      <div class="chat-context">
+        <span class="ctx-label">TUNED IN —</span>
+        <span class="ctx-game">WARRIORS <span class="vs">×</span> CELTICS</span>
+      </div>
+      <div class="scenario-pick">
+        <button class="scen-btn active" data-scenario="cup">NBA CUP</button>
+        <button class="scen-btn" data-scenario="xmas">XMAS DAY</button>
+        <button class="scen-btn" data-scenario="po">PLAYOFFS</button>
+      </div>
+    </div>
+
+    <div class="chat-scroll" id="chatScroll">
+      <div class="welcome" id="welcome">
+        <div class="welcome-mark">RING<br>THE<br><span>BUZZER.</span></div>
+        <div class="welcome-sub">A FAN COMPANION FOR PEOPLE WHO ONLY WATCH THE BIG ONES.</div>
+        <button class="welcome-cta" id="startBtn">▸ START THE GAME</button>
+        <div class="welcome-hint">Tonight: Warriors vs. Celtics — NBA Cup Final, Las Vegas.</div>
+      </div>
+    </div>
+
+    <form class="composer" id="composer" style="display:none;">
+      <input type="text" class="composer-input" id="composerInput" placeholder="Ask about the game, a play, or a player…" autocomplete="off" />
+      <button type="submit" class="composer-send" id="sendBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </form>
+  </main>
+
+  <!-- ============ RIGHT — GAME PANEL ============ -->
+  <aside class="gamepanel">
+    <div class="gp-head">
+      <div>
+        <div class="gp-title">SIMULATED LIVE</div>
+        <div class="ctx-game" style="font-size:14px;margin-top:2px;">GAME ID 0042400218</div>
+      </div>
+      <div class="gp-q" id="quarter">Q1</div>
+    </div>
+
+    <div class="scoreboard">
+      <div class="team">
+        <div class="team-logo gsw">GSW</div>
+        <div>
+          <div class="team-name">Warriors</div>
+          <div class="team-record">12—4 · road</div>
+        </div>
+        <div class="team-score" id="scoreA">0</div>
+      </div>
+      <div class="team">
+        <div class="team-logo bos">BOS</div>
+        <div>
+          <div class="team-name">Celtics</div>
+          <div class="team-record">14—3 · home</div>
+        </div>
+        <div class="team-score" id="scoreB">0</div>
+      </div>
+    </div>
+
+    <div class="clock-strip">
+      <span>CLOCK <b id="clock">12:00</b></span>
+      <span>POSS <b id="poss">—</b></span>
+      <span>FOULS <b>3—2</b></span>
+    </div>
+
+    <div class="pbp-section">
+      <div class="pbp-label">Play-by-Play</div>
+      <div id="pbpList">
+        <div class="play"><div class="play-clock">—</div><div class="play-text" style="color:var(--dim);font-style:italic;">Awaiting tip-off…</div></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl-btn" id="speedBtn">SPEED · 1×</button>
+      <button class="ctrl-btn primary" id="advanceBtn">▸ ADVANCE</button>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+/* =========================================================
+   TENTPOLE FAN COMPANION — Front-end demo
+   Simulates a Claude Desktop conversation orchestrating
+   an MCP server with 6 tools.
+   ========================================================= */
+
+const $ = id => document.getElementById(id);
+const chatScroll = $('chatScroll');
+const composer = $('composer');
+const composerInput = $('composerInput');
+const welcome = $('welcome');
+
+let runtime = 0;
+setInterval(() => {
+  runtime++;
+  const m = String(Math.floor(runtime/60)).padStart(2,'0');
+  const s = String(runtime%60).padStart(2,'0');
+  $('runtime').textContent = `${m}:${s}`;
+}, 1000);
+
+/* --------- Tool fire visuals --------- */
+const toolCounts = {};
+function fireTool(name) {
+  const el = document.querySelector(`.tool[data-tool="${name}"]`);
+  if (!el) return;
+  toolCounts[name] = (toolCounts[name] || 0) + 1;
+  el.querySelector('.tool-count').textContent = toolCounts[name];
+  el.classList.add('firing');
+  setTimeout(() => {
+    el.classList.remove('firing');
+    el.classList.add('fired');
+  }, 1200);
+}
+
+/* --------- Chat helpers --------- */
+function scrollDown() {
+  setTimeout(() => chatScroll.scrollTo({ top: chatScroll.scrollHeight, behavior: 'smooth' }), 50);
+}
+
+function addUser(text) {
+  const div = document.createElement('div');
+  div.className = 'msg user';
+  div.innerHTML = `
+    <div class="msg-meta"><span class="msg-avatar">YOU</span> · sent</div>
+    <div class="msg-body">${text}</div>`;
+  chatScroll.appendChild(div);
+  scrollDown();
+}
+
+function addClaude(html, opts = {}) {
+  const div = document.createElement('div');
+  div.className = 'msg claude';
+  div.innerHTML = `
+    <div class="msg-meta"><span class="msg-avatar">C</span> · Claude</div>
+    <div class="msg-body">${html}</div>`;
+  chatScroll.appendChild(div);
+  scrollDown();
+  return div;
+}
+
+function addToolCall(name, args, latency) {
+  const div = document.createElement('div');
+  div.className = 'msg claude';
+  div.innerHTML = `
+    <div class="tool-call">
+      <div class="tool-call-head">
+        <span>▸ MCP TOOL CALL</span>
+        <span>${latency}ms</span>
+      </div>
+      <div class="tool-call-name">→ <b>${name}</b>(${args})</div>
+      <div class="tool-call-args">↳ 200 OK · payload received</div>
+    </div>`;
+  chatScroll.appendChild(div);
+  scrollDown();
+  fireTool(name);
+}
+
+function addTyping() {
+  const div = document.createElement('div');
+  div.className = 'msg claude';
+  div.id = 'typing';
+  div.innerHTML = `
+    <div class="msg-meta"><span class="msg-avatar">C</span> · Claude is thinking</div>
+    <div class="msg-body"><div class="typing"><span></span><span></span><span></span></div></div>`;
+  chatScroll.appendChild(div);
+  scrollDown();
+}
+function rmTyping() { const t = $('typing'); if (t) t.remove(); }
+
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+/* =========================================================
+   THE SCRIPT — A 3-min walkthrough of one tentpole game
+   ========================================================= */
+
+async function runIntro() {
+  welcome.style.display = 'none';
+  composer.style.display = 'block';
+
+  addUser("I'm watching the NBA Cup Final tonight — Warriors at Celtics. Catch me up.");
+  await wait(900);
+  addTyping();
+  await wait(700);
+  rmTyping();
+
+  addToolCall('get_catchup_briefing', '"GSW", "BOS"', 142);
+  await wait(800);
+
+  addClaude(`
+    <p>Welcome back. This is the matchup the league has been pointing at since opening night — and it's loaded.</p>
+    <div class="feature-card">
+      <div class="fc-stripe"></div>
+      <div class="fc-head"><span class="fc-kind">CATCH-UP ENGINE</span><span class="fc-time">briefing · 142ms</span></div>
+      <div class="fc-title">THE REMATCH NOBODY ASKED FOR. EVERYBODY WANTED.</div>
+      <div class="fc-body">
+        <p>The <strong>Celtics</strong> have been the most efficient offense in basketball this season — they've broken the league record for threes attempted in five of the last six games. Jayson Tatum is in <em>"give him the MVP already"</em> form.</p>
+        <p>The <strong>Warriors</strong> caught fire in November after a slow start. Steph is having his best shooting season since the unanimous-MVP year. He's also <em>32 points away</em> from passing Reggie Miller for second on the all-time threes list — a record he already owns at #1.</p>
+        <p>These two played in the 2022 Finals. Boston has not forgotten. Tonight is in Vegas, neutral floor, NBA Cup hardware on the line. Tip's in 4 minutes.</p>
+      </div>
+    </div>
+    <p>Want me to walk you through the action as it happens? I'll flag anything historic, decode the broadcast jargon, and keep you ahead of the room.</p>
+  `);
+  scrollDown();
+
+  await wait(2200);
+  addUser("Yes please. Start the game.");
+  await wait(700);
+  addTyping();
+  await wait(600);
+  rmTyping();
+
+  addToolCall('start_game_simulation', '"0042400218"', 88);
+  await wait(400);
+  addClaude(`<p>Locked in. Tip-off coming up — I'll narrate. <em>You can ask me anything mid-game.</em></p>`);
+
+  // start the simulator
+  startSimulator();
+}
+
+/* =========================================================
+   GAME SIMULATOR — pre-recorded pbp on a timer
+   ========================================================= */
+
+const PBP = [
+  { q: 1, clock: "11:42", side: "BOS", text: "Tatum drives baseline — kick-out — <b>Brown 3PT MAKE</b>", scoreA: 0, scoreB: 3, type: 'score' },
+  { q: 1, clock: "11:18", side: "GSW", text: "Curry handoff — pull-up from 28' — <b>GOOD</b>. Logo three.", scoreA: 3, scoreB: 3, type: 'score', special: 'curry-hot', narrate: true },
+  { q: 1, clock: "10:52", side: "BOS", text: "Porzingis catch-and-shoot, contested — RIM OUT", scoreA: 3, scoreB: 3, type: 'miss' },
+  { q: 1, clock: "10:40", side: "GSW", text: "Curry off two screens — <b>3PT MAKE</b>", scoreA: 6, scoreB: 3, type: 'score', special: 'curry-hot' },
+  { q: 1, clock: "10:14", side: "BOS", text: "White drives — kick — <b>Holiday 3PT MAKE</b>", scoreA: 6, scoreB: 6, type: 'score' },
+  { q: 1, clock: "9:48", side: "GSW", text: "DDR — Curry slip screen — <b>3PT MAKE</b> from Sacramento", scoreA: 9, scoreB: 6, type: 'score', special: 'curry-hot', jargonTrigger: true, narrate: true },
+  { q: 1, clock: "9:21", side: "BOS", text: "Tatum step-back, 18ft — <b>GOOD</b>", scoreA: 9, scoreB: 8, type: 'score' },
+  { q: 1, clock: "8:44", side: "GSW", text: "Curry running through screens — <b>3PT MAKE</b>", scoreA: 12, scoreB: 8, type: 'score', special: 'curry-hot', milestone: true, narrate: true },
+];
+
+let pbpIdx = 0;
+let speed = 1; // 1x, 2x, 4x
+let advanceTimer = null;
+const pbpList = $('pbpList');
+
+function startSimulator() {
+  pbpIdx = 0;
+  pbpList.innerHTML = '';
+  scheduleNext(2500);
+  $('poss').textContent = 'GSW';
+}
+
+function scheduleNext(ms) {
+  clearTimeout(advanceTimer);
+  advanceTimer = setTimeout(advanceOne, ms / speed);
+}
+
+async function advanceOne() {
+  if (pbpIdx >= PBP.length) {
+    addPlayRow({ clock: '8:30', side: '', text: '— end of demo segment — feel free to keep asking questions —', type: '' });
+    return;
+  }
+  const p = PBP[pbpIdx++];
+  $('quarter').textContent = `Q${p.q}`;
+  $('clock').textContent = p.clock;
+  $('poss').textContent = p.side;
+  $('scoreA').textContent = p.scoreA;
+  $('scoreB').textContent = p.scoreB;
+
+  // flash score
+  if (p.type === 'score') {
+    const target = p.side === 'GSW' ? $('scoreA') : $('scoreB');
+    target.classList.add('scored');
+    setTimeout(() => target.classList.remove('scored'), 600);
+  }
+
+  addPlayRow(p);
+
+  // narrate select plays
+  if (p.narrate) await narratePlay(p);
+
+  // schedule next
+  scheduleNext(p.special === 'curry-hot' ? 4500 : 3200);
+}
+
+function addPlayRow(p) {
+  const div = document.createElement('div');
+  div.className = `play ${p.type || ''} ${p.milestone ? 'milestone' : ''}`;
+  div.innerHTML = `<div class="play-clock">${p.clock}</div><div class="play-text">${p.text}</div>`;
+  pbpList.appendChild(div);
+  pbpList.scrollTop = pbpList.scrollHeight;
+}
+
+/* =========================================================
+   IN-GAME NARRATION — tools fire as moments happen
+   ========================================================= */
+
+async function narratePlay(p) {
+  // First Curry logo three: poll game state, light commentary
+  if (p.clock === '11:18') {
+    await wait(900);
+    addToolCall('get_live_game_state', '', 41);
+    await wait(500);
+    addClaude(`
+      <p>And there it is — Steph from <strong>28 feet</strong>, barely past the logo. That shot wasn't in the playbook ten years ago. It is now, because of him.</p>
+    `);
+  }
+
+  // Jargon trigger: "DDR" — translator mode kicks in
+  if (p.jargonTrigger) {
+    await wait(1100);
+    addToolCall('translate_play', '"DDR — Curry slip screen — 3PT MAKE"', 96);
+    await wait(600);
+    addClaude(`
+      <div class="feature-card translator">
+        <div class="fc-stripe"></div>
+        <div class="fc-head"><span class="fc-kind">TRANSLATOR MODE</span><span class="fc-time">jargon detected</span></div>
+        <div class="fc-title">"DDR" = DRIBBLE DRIBBLE HANDOFF</div>
+        <div class="fc-body">
+          <p>The broadcast just said <span class="term">DDR</span>. Here's what happened: a teammate dribbles toward Curry, hands him the ball at full speed, and Curry takes off the other direction — like <em>two cars trading drivers without slowing down</em>. The defender has to switch in the half-second of the handoff. Curry uses that half-second to get free.</p>
+          <p>It's the single hardest action to defend in the modern NBA. <strong>Steph runs it 30+ times a game.</strong></p>
+        </div>
+      </div>
+    `);
+  }
+
+  // Milestone trigger
+  if (p.milestone) {
+    await wait(1400);
+    addToolCall('check_milestones', '"Stephen Curry", { 3PM: 3 }', 73);
+    await wait(400);
+    addToolCall('get_player_context', '"Stephen Curry"', 118);
+    await wait(700);
+    addClaude(`
+      <div class="feature-card legacy">
+        <div class="fc-stripe"></div>
+        <div class="fc-head"><span class="fc-kind">LEGACY LENS · MILESTONE WATCH</span><span class="fc-time">historic</span></div>
+        <div class="fc-title">3 THREES IN. 29 TO GO.</div>
+        <div class="fc-body">
+          <p>That third three put Curry at <strong>3,948</strong> career makes — <em>29 away</em> from passing Reggie Miller for #2 all-time. (Reminder: he already owns #1, by a country mile.)</p>
+          <p>If he keeps this pace tonight, he passes Reggie before halftime. On NBA Cup hardware. In Vegas. With Boston watching.</p>
+          <div class="stat-grid">
+            <div class="stat-cell"><div class="stat-num hot">3,948</div><div class="stat-lbl">Career 3PM</div></div>
+            <div class="stat-cell"><div class="stat-num">29</div><div class="stat-lbl">To pass Reggie</div></div>
+            <div class="stat-cell"><div class="stat-num">3/3</div><div class="stat-lbl">Tonight</div></div>
+          </div>
+        </div>
+      </div>
+      <p>I'll let you know the moment he hits it. <em>Eyes up.</em></p>
+    `);
+  }
+}
+
+/* =========================================================
+   USER QUESTIONS — handle in-flight questions
+   ========================================================= */
+
+const RESPONSES = [
+  {
+    match: /tatum|jayson/i,
+    tool: ['get_player_context', '"Jayson Tatum"', 134],
+    html: `
+      <div class="feature-card legacy">
+        <div class="fc-stripe"></div>
+        <div class="fc-head"><span class="fc-kind">LEGACY LENS · PLAYER CONTEXT</span><span class="fc-time">133ms</span></div>
+        <div class="fc-title">JAYSON TATUM — THE QUIET ASCENT</div>
+        <div class="fc-body">
+          <p>Drafted #3 in 2017 out of Duke. Made his first All-Star team at 21. Won a title in 2024. He's now in his prime years, averaging a career-high in points, rebounds, AND assists — which almost nobody does.</p>
+          <p>The story this season: he's gone from <em>"can he be the guy?"</em> to <em>"he is the guy."</em> Tonight on this stage is part of that proof.</p>
+        </div>
+      </div>`
+  },
+  {
+    match: /pick.?and.?roll|pnr|screen/i,
+    tool: ['translate_play', '"pick and roll"', 88],
+    html: `
+      <div class="feature-card translator">
+        <div class="fc-stripe"></div>
+        <div class="fc-head"><span class="fc-kind">TRANSLATOR MODE</span><span class="fc-time">88ms</span></div>
+        <div class="fc-title">PICK AND ROLL, EXPLAINED</div>
+        <div class="fc-body">
+          <p>Two offensive players work together: a big man stands in the way of the defender (the "pick"), then sprints toward the basket (the "roll"). It's the basketball equivalent of <em>holding a door open for your friend so they can slip past the bouncer</em>.</p>
+          <p>Every NBA team runs hundreds of these per game. It's the most-used play in basketball — by a lot.</p>
+        </div>
+      </div>`
+  },
+  {
+    match: /score|game.?state|live|where/i,
+    tool: ['get_live_game_state', '', 38],
+    html: `<p>Right now: <strong>Warriors 12, Celtics 8</strong> — 8:44 left in the first. Curry just hit his third three. The crowd is electric.</p>`
+  },
+  {
+    match: /milestone|record|reggie|miller/i,
+    tool: ['check_milestones', '"Stephen Curry"', 71],
+    html: `
+      <div class="feature-card milestone">
+        <div class="fc-stripe"></div>
+        <div class="fc-head"><span class="fc-kind">MILESTONE WATCH</span><span class="fc-time">71ms</span></div>
+        <div class="fc-title">CHASING REGGIE</div>
+        <div class="fc-body">
+          <p>Steph entered tonight at <strong>3,945</strong> career threes. He's hit 3 already. Reggie Miller sits at <strong>2,560</strong> — already passed long ago — but the active chase is for an even older mark: he's hunting his own all-time pace record set in 2021.</p>
+          <p>If he hits 7+ tonight, that's a personal record on a tentpole stage. Worth watching.</p>
+        </div>
+      </div>`
+  }
+];
+
+composer.addEventListener('submit', async e => {
+  e.preventDefault();
+  const text = composerInput.value.trim();
+  if (!text) return;
+  composerInput.value = '';
+  addUser(text);
+  await wait(500);
+  addTyping();
+  await wait(700);
+  rmTyping();
+
+  const r = RESPONSES.find(x => x.match.test(text));
+  if (r) {
+    addToolCall(...r.tool);
+    await wait(500);
+    addClaude(r.html);
+  } else {
+    // generic fallthrough — still demonstrate orchestration
+    addToolCall('get_live_game_state', '', 38);
+    await wait(400);
+    addClaude(`<p>I hear you. Right now we're in Q1, 8:44, GSW up 12-8 with Curry on a heater. Ask me about a player, a play, or a record — I've got the league's history on tap.</p>`);
+  }
+});
+
+/* --------- Controls --------- */
+$('startBtn').addEventListener('click', runIntro);
+
+$('advanceBtn').addEventListener('click', () => {
+  if (pbpIdx === 0) return;
+  clearTimeout(advanceTimer);
+  advanceOne();
+});
+
+$('speedBtn').addEventListener('click', () => {
+  speed = speed === 1 ? 2 : speed === 2 ? 4 : 1;
+  $('speedBtn').textContent = `SPEED · ${speed}×`;
+});
+
+/* --------- Scenario picker --------- */
+document.querySelectorAll('.scen-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.scen-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+  });
+});
+</script>
+
+</body>
+</html>
