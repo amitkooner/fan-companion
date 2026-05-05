@@ -109,8 +109,6 @@ export default function App() {
   const [syncA, setSyncA] = useState("");
   const [syncH, setSyncH] = useState("");
   const [syncQ, setSyncQ] = useState(1);
-  const [ytReady, setYtReady] = useState(false);
-  const [videoPlaying, setVideoPlaying] = useState(false);
   const [secondScreenMode, setSecondScreenMode] = useState(false);
   const [autoAdvanceTimer, setAutoAdvanceTimer] = useState(null);
 
@@ -121,9 +119,6 @@ export default function App() {
 
   // Refs
   const chatRef = useRef(null);
-  const ytPlayer = useRef(null);
-  const ytDiv = useRef(null);
-  const syncInterval = useRef(null);
 
   // Derived
   const game = gameId ? GAMES[gameId] : null;
@@ -153,79 +148,8 @@ export default function App() {
       role: "assistant",
       content: `Welcome to "${g.title}"! I'm your companion for this game. Ask me anything — what a play means, who a player is, or why a moment matters.`,
     }]);
-    setYtReady(false);
-    ytPlayer.current = null;
     setScreen("companion");
   };
-
-  // ---- YouTube IFrame API ----
-  useEffect(() => {
-    if (screen !== "companion" || !game) return;
-    if (window.YT && window.YT.Player) { initYT(); return; }
-    const tag = document.createElement("script");
-    tag.src = "https://www.youtube.com/iframe_api";
-    tag.onerror = () => setYtReady(false);
-    document.head.appendChild(tag);
-    window.onYouTubeIframeAPIReady = initYT;
-    return () => { window.onYouTubeIframeAPIReady = null; };
-  }, [screen, gameId]);
-
-  function initYT() {
-    if (!ytDiv.current || ytPlayer.current || !game) return;
-    try {
-      ytPlayer.current = new window.YT.Player(ytDiv.current, {
-        videoId: game.ytId,
-        playerVars: { rel: 0, modestbranding: 1 },
-        events: {
-          onReady: () => setYtReady(true),
-          onStateChange: (e) => {
-            // PLAYING=1, PAUSED=2, ENDED=0, BUFFERING=3
-            if (e.data === 1) {
-              setVideoPlaying(true);
-              startSync();
-            } else if (e.data === 2 || e.data === 0) {
-              setVideoPlaying(false);
-              stopSync();
-            }
-          },
-        },
-      });
-    } catch {
-      setYtReady(false);
-    }
-  }
-
-  function startSync() {
-    stopSync();
-    syncInterval.current = setInterval(() => {
-      if (!ytPlayer.current?.getCurrentTime) return;
-      const sec = ytPlayer.current.getCurrentTime();
-      const hasTimestamps = game?.timestamps?.length > 0;
-
-      let newIdx;
-      if (hasTimestamps) {
-        // Precise: use mapped timestamps
-        newIdx = findPlayByTimestamp(game.timestamps, sec);
-      } else {
-        // Proportional fallback: distribute plays across video duration
-        const dur = ytPlayer.current.getDuration ? ytPlayer.current.getDuration() : 0;
-        newIdx = findPlayByProportion(plays.length, sec, dur);
-      }
-
-      if (newIdx >= 0 && newIdx !== idx) {
-        setIdx(newIdx);
-      }
-    }, 1000);
-  }
-
-  function stopSync() {
-    if (syncInterval.current) {
-      clearInterval(syncInterval.current);
-      syncInterval.current = null;
-    }
-  }
-
-  useEffect(() => () => stopSync(), []);
 
   // Auto-switch to Live Feed when plays start
   useEffect(() => {
@@ -305,8 +229,7 @@ export default function App() {
   };
 
   const handleBack = () => {
-    stopSync();
-    ytPlayer.current = null;
+    stopAutoAdvance();
     setScreen("select");
     setGameId(null);
   };
@@ -608,7 +531,7 @@ export default function App() {
                     borderRadius: "50%",
                     background: C.red,
                     boxShadow: `0 0 6px ${C.red}50`,
-                    animation: videoPlaying ? "pulseDot 1.5s infinite" : "none"
+                    animation: secondScreenMode ? "pulseDot 1.5s infinite" : "none"
                   }} />
                   <span style={{ fontSize: 10, fontWeight: 800, color: C.red, letterSpacing: 2 }}>LIVE</span>
                   <span style={{ fontSize: 11, color: C.txM, marginLeft: "auto", fontVariantNumeric: "tabular-nums" }}>Q{currentPlay.q} · {currentPlay.time}</span>
