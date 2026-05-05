@@ -131,6 +131,10 @@ export default function App() {
   const homeScore = currentPlay ? currentPlay.home : 0;
   const recentPlays = idx >= 0 ? plays.slice(0, idx + 1) : [];
 
+  // Track previous scores for flash animation
+  const prevScores = useRef({ away: 0, home: 0 });
+  const [scoreFlash, setScoreFlash] = useState({ away: false, home: false });
+
   // ---- Game selection ----
   const selectGame = (id) => {
     const g = GAMES[id];
@@ -237,6 +241,21 @@ export default function App() {
       });
     }
   }, [idx]);
+
+  // Score flash animation
+  useEffect(() => {
+    if (idx >= 0 && currentPlay) {
+      if (currentPlay.away !== prevScores.current.away) {
+        setScoreFlash(prev => ({ ...prev, away: true }));
+        setTimeout(() => setScoreFlash(prev => ({ ...prev, away: false })), 600);
+      }
+      if (currentPlay.home !== prevScores.current.home) {
+        setScoreFlash(prev => ({ ...prev, home: true }));
+        setTimeout(() => setScoreFlash(prev => ({ ...prev, home: false })), 600);
+      }
+      prevScores.current = { away: currentPlay.away, home: currentPlay.home };
+    }
+  }, [idx, currentPlay]);
 
   // Chat auto-scroll
   useEffect(() => {
@@ -383,9 +402,27 @@ export default function App() {
             </div>
             <div style={{ textAlign: "center" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ fontSize: 34, fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>{awayScore}</span>
+                <span style={{
+                  fontSize: 34,
+                  fontWeight: 800,
+                  fontVariantNumeric: "tabular-nums",
+                  transition: "background-color 0.6s, transform 0.3s",
+                  background: scoreFlash.away ? C.goldL : "transparent",
+                  padding: "0 8px",
+                  borderRadius: 8,
+                  transform: scoreFlash.away ? "scale(1.1)" : "scale(1)"
+                }}>{awayScore}</span>
                 <span style={{ fontSize: 20, color: C.txM }}>—</span>
-                <span style={{ fontSize: 34, fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>{homeScore}</span>
+                <span style={{
+                  fontSize: 34,
+                  fontWeight: 800,
+                  fontVariantNumeric: "tabular-nums",
+                  transition: "background-color 0.6s, transform 0.3s",
+                  background: scoreFlash.home ? C.goldL : "transparent",
+                  padding: "0 8px",
+                  borderRadius: 8,
+                  transform: scoreFlash.home ? "scale(1.1)" : "scale(1)"
+                }}>{homeScore}</span>
               </div>
               <div style={{ fontSize: 11, fontWeight: 600, color: C.txM, letterSpacing: 1, marginTop: 3 }}>
                 {idx === -1 ? "PRE-GAME" : idx >= plays.length - 1 ? "FINAL" : `Q${currentPlay.q} · ${currentPlay.time}`}
@@ -474,7 +511,7 @@ export default function App() {
         {tab === "live" && <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", position: "relative" }}>
           {/* Milestone overlay */}
           {milestone && <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,.92)", zIndex: 20, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-            <div style={{ background: C.bg, border: `2px solid ${C.gold}`, borderRadius: 18, padding: 28, textAlign: "center", maxWidth: 340, boxShadow: "0 8px 40px rgba(0,0,0,.12)" }}>
+            <div style={{ background: C.bg, border: `2px solid ${C.gold}`, borderTop: `4px solid ${C.gold}`, borderRadius: 18, padding: 28, textAlign: "center", maxWidth: 340, boxShadow: "0 8px 40px rgba(0,0,0,.12)" }}>
               <div style={{ fontSize: 44, marginBottom: 10 }}>{milestone.type === "record_break" ? "🏆" : milestone.type === "final" ? "🏁" : "⭐"}</div>
               <h3 style={{ fontSize: 20, fontWeight: 900, color: C.goldT, margin: "0 0 10px", letterSpacing: 2 }}>{milestone.type === "record_break" ? "HISTORY MADE" : milestone.type === "record_tie" ? "RECORD TIED" : "GAME OVER"}</h3>
               <p style={{ fontSize: 14, lineHeight: 1.65, color: C.tx2, margin: "0 0 16px" }}>{milestone.text}</p>
@@ -484,7 +521,7 @@ export default function App() {
           </div>}
 
           {/* Translation card */}
-          {translation && <div style={{ background: C.bg, border: `1.5px solid ${C.blueB}`, borderRadius: 12, padding: 14, margin: "8px 16px 0", boxShadow: "0 4px 16px rgba(0,0,0,.08)" }}>
+          {translation && <div style={{ background: C.bg, border: `1.5px solid ${C.blueB}`, borderTop: `3px solid ${C.blue}`, borderRadius: 12, padding: 14, margin: "8px 16px 0", boxShadow: "0 4px 16px rgba(0,0,0,.08)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
               <span style={{ fontSize: 14, fontWeight: 700, color: C.blue }}>"{translation.term}"</span>
               <button style={{ background: "transparent", border: "none", color: C.txM, fontSize: 16, cursor: "pointer" }} onClick={() => setTranslation(null)}>✕</button>
@@ -497,9 +534,24 @@ export default function App() {
             ? <div style={{ textAlign: "center", color: C.txM, marginTop: 60, fontSize: 14, padding: "0 24px", lineHeight: 1.6 }}>Press play on the video above — the companion will sync automatically.</div>
             : <>
               {/* NOW card */}
-              <div key={idx} style={{ background: currentPlay?.milestone ? C.goldL : C.blueL, border: `1.5px solid ${currentPlay?.milestone ? C.gold : C.blueB}`, borderRadius: 14, padding: 18, margin: "12px 16px 0" }}>
+              <div key={idx} style={{
+                background: currentPlay?.milestone ? C.goldL : C.blueL,
+                border: `1.5px solid ${currentPlay?.milestone ? C.gold : C.blueB}`,
+                borderTop: `3px solid ${currentPlay?.milestone ? C.gold : C.blue}`,
+                borderRadius: 14,
+                padding: 18,
+                margin: "12px 16px 0",
+                animation: "fadeInUp 0.3s ease-out"
+              }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: C.red, boxShadow: `0 0 6px ${C.red}50` }} />
+                  <span style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: C.red,
+                    boxShadow: `0 0 6px ${C.red}50`,
+                    animation: videoPlaying ? "pulseDot 1.5s infinite" : "none"
+                  }} />
                   <span style={{ fontSize: 10, fontWeight: 800, color: C.red, letterSpacing: 2 }}>LIVE</span>
                   <span style={{ fontSize: 11, color: C.txM, marginLeft: "auto", fontVariantNumeric: "tabular-nums" }}>Q{currentPlay.q} · {currentPlay.time}</span>
                 </div>
@@ -547,15 +599,26 @@ export default function App() {
             ))}
           </div>
           {selectedPlayer && game.players[selectedPlayer] && (
-            <div style={{ marginTop: 16, background: C.bg2, borderRadius: 12, padding: 16, border: `1px solid ${C.bdr}` }}>
+            <div style={{ marginTop: 16, background: C.bg2, borderRadius: 12, padding: 16, border: `1px solid ${C.bdr}`, borderTop: `3px solid ${C.red}` }}>
               <h3 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>#{game.players[selectedPlayer].number} {game.players[selectedPlayer].name}</h3>
               <div style={{ fontSize: 12, color: C.txM, marginTop: 4, marginBottom: 12 }}>{game.players[selectedPlayer].team} · {game.players[selectedPlayer].position}</div>
               <p style={{ fontSize: 13, lineHeight: 1.65, color: C.tx2, margin: 0 }}>{game.players[selectedPlayer].bio}</p>
               {game.players[selectedPlayer].careerThrees && (
-                <div style={{ marginTop: 14, background: C.bg, borderRadius: 10, padding: 14, textAlign: "center", border: `1px solid ${C.bdr}` }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: C.txM, letterSpacing: 1, textTransform: "uppercase" }}>Career 3PT entering tonight</div>
-                  <div style={{ fontSize: 32, fontWeight: 900, color: C.blue, marginTop: 4 }}>{game.players[selectedPlayer].careerThrees.toLocaleString()}</div>
-                  <div style={{ fontSize: 11, color: C.txM, marginTop: 4 }}>Ray Allen's record: 2,973</div>
+                <div style={{ marginTop: 14, background: C.bg, borderRadius: 10, overflow: "hidden", border: `1px solid ${C.bdr}` }}>
+                  <div style={{ padding: 14, textAlign: "center", borderBottom: `1px solid ${C.bdr}` }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: C.txM, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>Career Stats</div>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 1, background: C.bdr }}>
+                    <div style={{ background: C.bg, padding: 12, textAlign: "center" }}>
+                      <div style={{ fontSize: 28, fontWeight: 900, color: C.blue, lineHeight: 1 }}>{game.players[selectedPlayer].careerThrees.toLocaleString()}</div>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: C.txM, marginTop: 6, letterSpacing: 0.5, textTransform: "uppercase" }}>Career 3PM</div>
+                    </div>
+                    <div style={{ background: C.bg, padding: 12, textAlign: "center" }}>
+                      <div style={{ fontSize: 28, fontWeight: 900, color: C.txM, lineHeight: 1 }}>{(2973 - game.players[selectedPlayer].careerThrees)}</div>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: C.txM, marginTop: 6, letterSpacing: 0.5, textTransform: "uppercase" }}>Behind Record</div>
+                    </div>
+                  </div>
+                  <div style={{ padding: 10, background: C.bg2, textAlign: "center", fontSize: 11, color: C.tx2 }}>Ray Allen's record: 2,973</div>
                 </div>
               )}
             </div>
