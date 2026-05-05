@@ -111,6 +111,8 @@ export default function App() {
   const [syncQ, setSyncQ] = useState(1);
   const [ytReady, setYtReady] = useState(false);
   const [videoPlaying, setVideoPlaying] = useState(false);
+  const [secondScreenMode, setSecondScreenMode] = useState(false);
+  const [autoAdvanceTimer, setAutoAdvanceTimer] = useState(null);
 
   // Chat
   const [chatMsgs, setChatMsgs] = useState([]);
@@ -270,6 +272,31 @@ export default function App() {
     setSyncA("");
     setSyncH("");
     setTab("live");
+    // Enable second-screen mode with auto-advance
+    setSecondScreenMode(true);
+    startAutoAdvance();
+  };
+
+  // Auto-advance plays for second-screen mode (watching on TV/another device)
+  const startAutoAdvance = () => {
+    if (autoAdvanceTimer) clearInterval(autoAdvanceTimer);
+    const timer = setInterval(() => {
+      setIdx(prev => {
+        if (prev >= plays.length - 1) {
+          clearInterval(timer);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, 8000); // Advance every 8 seconds (average play duration)
+    setAutoAdvanceTimer(timer);
+  };
+
+  const stopAutoAdvance = () => {
+    if (autoAdvanceTimer) {
+      clearInterval(autoAdvanceTimer);
+      setAutoAdvanceTimer(null);
+    }
   };
 
   const handleTranslate = (term) => {
@@ -436,32 +463,54 @@ export default function App() {
         </div>
       </div>
 
-      {/* VIDEO */}
+      {/* SECOND-SCREEN MODE PANEL */}
       <div style={{ padding: "0 16px 12px", borderBottom: `1px solid ${C.bdr}` }}>
-        <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, borderRadius: 10, overflow: "hidden", background: "#000", marginTop: 12 }}>
-          {!ytReady && <iframe src={`https://www.youtube.com/embed/${game.ytId}?rel=0&modestbranding=1`} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }} allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowFullScreen title="Game" />}
-          <div ref={ytDiv} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
-          {/* Embed restriction fallback */}
-          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.85)", padding: 24, textAlign: "center", pointerEvents: "none" }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🏀</div>
-            <p style={{ fontSize: 14, color: "#fff", marginBottom: 8, fontWeight: 600 }}>Video Embed Restricted</p>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 16, lineHeight: 1.5 }}>This video can't be embedded due to YouTube restrictions. Watch it on YouTube and use manual sync below.</p>
-            <a href={`https://www.youtube.com/watch?v=${game.ytId}`} target="_blank" rel="noopener noreferrer" style={{ background: C.red, color: "#fff", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 700, textDecoration: "none", pointerEvents: "auto" }}>
+        <div style={{ position: "relative", borderRadius: 14, overflow: "hidden", background: `linear-gradient(135deg, ${C.blueL}, ${C.bg})`, marginTop: 12, border: `1px solid ${C.bdr}`, padding: 24 }}>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>📺</div>
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: C.tx, marginBottom: 8 }}>Second-Screen Mode</h3>
+            <p style={{ fontSize: 13, color: C.tx2, lineHeight: 1.6, marginBottom: 16 }}>
+              Watch <strong>{game.title}</strong> on TV, YouTube, or League Pass.<br />
+              Use the companion to follow along with context.
+            </p>
+            {!secondScreenMode ? (
+              <button
+                style={{ background: C.blue, color: "#fff", border: "none", borderRadius: 10, padding: "12px 24px", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 12px rgba(0,82,204,0.3)" }}
+                onClick={() => setSyncOpen(true)}
+              >
+                Start Watching
+              </button>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#16a34a", display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 6px #22c55e50", animation: "pulseDot 1.5s infinite" }} />
+                  Following game • Auto-advancing
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    style={{ background: C.bg2, color: C.tx, border: `1px solid ${C.bdr}`, borderRadius: 8, padding: "6px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer" }}
+                    onClick={stopAutoAdvance}
+                  >
+                    Pause
+                  </button>
+                  <button
+                    style={{ background: C.bg2, color: C.blue, border: `1px solid ${C.blueB}`, borderRadius: 8, padding: "6px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer" }}
+                    onClick={() => setSyncOpen(true)}
+                  >
+                    Re-sync
+                  </button>
+                </div>
+              </div>
+            )}
+            <a
+              href={`https://www.youtube.com/watch?v=${game.ytId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontSize: 11, color: C.blue, marginTop: 12, display: "inline-block", textDecoration: "none", fontWeight: 600 }}
+            >
               Watch on YouTube ↗
             </a>
           </div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8 }}>
-          {videoPlaying
-            ? <div style={{ fontSize: 12, fontWeight: 600, color: "#16a34a", display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 6px #22c55e50" }} />
-                {hasTs ? "Auto-syncing with video" : "Syncing with video"}
-              </div>
-            : <>
-                <p style={{ fontSize: 11, color: C.txM, textAlign: "center", margin: 0 }}>Video restricted? Use manual sync →</p>
-                <button style={{ background: C.blue, color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 12, fontWeight: 700, cursor: "pointer", flexShrink: 0 }} onClick={() => setSyncOpen(true)}>Manual Sync</button>
-              </>
-          }
         </div>
       </div>
 
